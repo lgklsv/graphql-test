@@ -4,11 +4,13 @@ const _ = require('lodash');
 const resolvers = {
   Query: {
     // User resolvers
-    users: () => {
+    users: (parent, args, context, info) => {
       // Here should be an Api call to the data base to get the results
-      return UserList;
+      if (UserList) return { users: UserList };
+
+      return { message: 'There was an error' };
     },
-    user: (parent, args) => {
+    user: (parent, args, context, info) => {
       const { id } = args;
       const user = _.find(UserList, { id: Number(id) });
       return user;
@@ -51,6 +53,19 @@ const resolvers = {
     deleteUser: (parent, args) => {
       const { id } = args;
       _.remove(UserList, (user) => user.id === +id);
+      return null;
+    },
+  },
+
+  UsersResult: {
+    __resolveType(obj) {
+      if (obj.users) {
+        return 'UsersSuccessfulResult';
+      }
+
+      if (obj.message) {
+        return 'UsersErrorResult';
+      }
       return null;
     },
   },
